@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monte Carlo Sampling</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=egde,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <script type="text/javascript" charset="utf-8">
+var canvas = document.body.appendChild(document.createElement("canvas")),
+    context = canvas.getContext("2d"),
+    pX, pY,  // projected on canvas x and y coordinates
+    perspective = 350,
+    cameraZ = -1400,
+    yAxisRotationAngle = Math.PI; // in radians!
+
+function surface(a, b) {
+  var toggle = Math.random() > 0.5,
+      angle = a * Math.PI * 2,
+      radius = toggle ? 100 : 50,
+      length = 400,
+      mul = toggle ? a : (1-a);
+  var x = Math.cos(angle) * radius,
+      y = Math.sin(angle) * radius,
+      z = b * length - length / 2;
+
+  return {
+    x: x * Math.cos(yAxisRotationAngle) + z * Math.sin(yAxisRotationAngle),
+    y: y,
+    z: x * -Math.sin(yAxisRotationAngle) + z * Math.cos(yAxisRotationAngle),
+    r: Math.floor(b*255),
+    g: Math.floor(mul*255),
+    b: 255,
+  };
+}
+
+var LOOPS = 10000,
+    random = [];
+for (var i = 0; i < (LOOPS*2); i++) {
+  random.push(Math.random());
+}
+
+var pow = 1,
+    block = Math.pow(2, pow),
+    mask = (0xffffffff << pow) & 0x7fffffff;
+
+function loop() {
+  yAxisRotationAngle += 0.01;
+  context.fillStyle = "black";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  var zBuffer = [],
+      zBufferIndex;
+  for (var i = 0; i < LOOPS; i++) {
+    if (p = surface(random[i*2], random[i*2+1])) {
+      pX = ((p.x * perspective) / (p.z - cameraZ) + canvas.width/2) & mask;
+      pY = ((p.y * perspective) / (p.z - cameraZ) + canvas.height/2) & mask;
+      zBufferIndex = Math.floor(pY/block * canvas.width) + Math.floor(pX/block);
+      if ((typeof zBuffer[zBufferIndex] === "undefined") || (p.z < zBuffer[zBufferIndex])) {
+        zBuffer[zBufferIndex] = p.z;
+        context.fillStyle = "rgb(" + p.r + "," + p.g + "," + p.b + ")";
+        context.fillRect(pX, pY, block, block);
+      }
+    }
+  }
+  window.requestAnimationFrame(loop);
+}
+loop();
+  </script>
+</body>
+</html>

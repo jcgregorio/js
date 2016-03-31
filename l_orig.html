@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monte Carlo Sampling</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=egde,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <canvas id=canvas width=500 height=500>
+  <script type="text/javascript" charset="utf-8">
+var canvas = document.getElementById('canvas'),
+    context = canvas.getContext("2d"),
+    rules = {
+      X: "F−[[X]+X]+F[+FX]−X",
+      F: "FF",
+    },
+    L = "X";
+
+function expand(s) {
+  var ret = "";
+  for (var i = 0; i < s.length; i++) {
+    ret += rules[s[i]] ? rules[s[i]] : s[i];
+  }
+  return ret;
+}
+
+for (var i = 0; i < 6; i++) {
+  L = expand(L);
+}
+
+var cur = [canvas.width/2, canvas.height, Math.PI];
+var stack = [];
+var len = 3;
+function dup(o) {
+  return JSON.parse(JSON.stringify(o));
+}
+
+context.beginPath();
+context.moveTo(cur[0], cur[1]);
+for (var i = 0; i < L.length; i++) {
+  var c = L[i];
+  if (c == "F") {
+    cur[0] = cur[0] + len*Math.sin(cur[2]);
+    cur[1] = cur[1] + len*Math.cos(cur[2]);
+    context.lineTo(cur[0], cur[1]);
+  } else if (c == "-") {
+    cur[2] = cur[2] + Math.random()*Math.PI/7;
+  } else if (c == "+") {
+    cur[2] = cur[2] - Math.random()*Math.PI/7;
+  } else if (c == "[") {
+    stack.push(dup(cur));
+  } else if (c == "]") {
+    context.closePath();
+    context.stroke();
+    cur = stack.pop();
+    context.beginPath();
+    context.moveTo(cur[0], cur[1]);
+  }
+}
+context.closePath();
+context.stroke();
+
+
+  </script>
+</body>
+</html>

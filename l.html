@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>L-Systems</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=egde,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style type="text/css" media="screen">
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+</head>
+<body>
+  <canvas id=canvas width=500 height=500>
+  <script type="text/javascript" charset="utf-8">
+var a = document.getElementById('canvas');
+a.width = window.innerWidth-5;
+a.height = window.innerHeight-5;
+var c = a.getContext("2d");
+
+function E(s) { return s ? (rules[s[0]] + E(s.substr(1))) : "" }
+M = Math
+r = M.random
+rules = {
+  X: "F-[[X]+X]+F[+FX]-X",
+  F: "FF",
+  "+": "+",
+  "-": "-",
+  "[": "[",
+  "]": "]",
+}
+L = E(E(E(E(E("X")))))
+ys = []
+
+function draw(x, y, len) {
+  p = { x: x, y: y, a: 3 }
+  st = []
+  c.beginPath()
+  c.moveTo(p.x, p.y)
+  L.split("").forEach(function(ch) {
+    if (ch == "F") {
+      p.x += len*M.sin(p.a)
+      p.y += len*M.cos(p.a)
+      c.lineTo(p.x, p.y)
+      c.stroke()
+    } else if (ch == "-") {
+      p.a += r()/2
+    } else if (ch == "+") {
+      p.a -= r()/2
+    } else if (ch == "[") {
+      st.push(JSON.parse(JSON.stringify(p)))
+    } else if (ch == "]") {
+      p = st.pop()
+      c.beginPath()
+      c.moveTo(p.x, p.y)
+    }
+  })
+}
+for (i = 0; i < a.height/5; i++) {
+  ys.push(r())
+}
+ys.sort(function(a, b) {return a-b}).forEach(function(v) {
+  cl = 0|(1-v)*255
+  c.strokeStyle = "rgb("+[cl,cl,cl]+")"
+  draw(r()*a.width, v*a.height, v*3)
+})
+  </script>
+</body>
+</html>
